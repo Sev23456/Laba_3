@@ -1,0 +1,9 @@
+g++ -std=c++17 -Wall -Wextra -Wpedantic -I. -Iinclude main.cpp -o main.exe
+
+g++ -std=c++17 -Wall -Wextra -Wpedantic -I. -Iinclude console_main.cpp -o console_main.exe
+
+g++ -std=c++17 -Wall -Wextra -Wpedantic -I. -Iinclude tests.cpp -o tests.exe
+
+g++ -std=c++17 -Wall -Wextra -Wpedantic -I. -Iinclude vector_tests.cpp -o vector_tests.exe
+
+g++ -std=c++17 -Wall -Wextra -Wpedantic -I. -Iinclude matrix_tests.cpp -o matrix_tests.exe
