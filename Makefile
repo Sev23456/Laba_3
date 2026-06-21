@@ -9,23 +9,20 @@ HEADERS := $(wildcard *.h include/*.h include/*.tpp)
 
 all: $(PROGRAMS)
 
-main.exe: main.o util.o
-	$(CXX) $(CXXFLAGS) $^ -o $@
+main.exe: main.cpp util.cpp $(HEADERS)
+	$(CXX) $(CPPFLAGS) $(CXXFLAGS) main.cpp util.cpp -o $@
 
-console_main.exe: console_main.o util.o
-	$(CXX) $(CXXFLAGS) $^ -o $@
+console_main.exe: console_main.cpp util.cpp $(HEADERS)
+	$(CXX) $(CPPFLAGS) $(CXXFLAGS) console_main.cpp util.cpp -o $@
 
-tests.exe: tests.o
-	$(CXX) $(CXXFLAGS) $^ -o $@
+tests.exe: tests.cpp $(HEADERS)
+	$(CXX) $(CPPFLAGS) $(CXXFLAGS) tests.cpp -o $@
 
-vector_tests.exe: vector_tests.o util.o
-	$(CXX) $(CXXFLAGS) $^ -o $@
+vector_tests.exe: vector_tests.cpp util.cpp $(HEADERS)
+	$(CXX) $(CPPFLAGS) $(CXXFLAGS) vector_tests.cpp util.cpp -o $@
 
-matrix_tests.exe: matrix_tests.o
-	$(CXX) $(CXXFLAGS) $^ -o $@
-
-%.o: %.cpp $(HEADERS)
-	$(CXX) $(CPPFLAGS) $(CXXFLAGS) -c $< -o $@
+matrix_tests.exe: matrix_tests.cpp $(HEADERS)
+	$(CXX) $(CPPFLAGS) $(CXXFLAGS) matrix_tests.cpp -o $@
 
 run-tests: tests.exe vector_tests.exe matrix_tests.exe
 	./tests.exe

@@ -18,6 +18,8 @@ const int IMMUTABLE_LIST_SEQUENCE_KIND = 4;
 const int VECTOR_KIND = 5;
 const int MUTABLE_MATRIX_KIND = 6;
 const int IMMUTABLE_MATRIX_KIND = 7;
+const int MUTABLE_TRIANGULAR_MATRIX_KIND = 8;
+const int IMMUTABLE_TRIANGULAR_MATRIX_KIND = 9;
 
 int square(const int &value);
 bool is_even(const int &value);

@@ -5,6 +5,7 @@
 #include <string>
 
 #include "include/Matrix.h"
+#include "include/TriangularMatrix.h"
 
 namespace {
 
@@ -226,6 +227,118 @@ void test_double_and_complex_matrix() {
     expect_close(complex_matrix.count_norm(), std::sqrt(15.0), "complex matrix norm");
 }
 
+void test_triangular_matrix_construction() {
+    int raw[] = {1, 2, 3, 4, 5, 6, 7, 8, 9};
+
+    MutableTriangularMatrix<int> lower(raw, 3, true);
+    int expected_lower[] = {1, 0, 0, 4, 5, 0, 7, 8, 9};
+    expect_matrix_eq(lower, expected_lower, 3, 3, "lower triangular construction crops values");
+    expect_eq(lower.get_size(), 3, "lower triangular size");
+    expect_eq(lower.is_lower(), true, "lower triangular flag");
+    expect_eq(lower.is_allowed_cell(2, 0), true, "lower triangular allowed cell");
+    expect_eq(lower.is_allowed_cell(0, 2), false, "lower triangular forbidden cell");
+    expect_close(lower.count_norm(), std::sqrt(236.0), "lower triangular norm");
+
+    MutableTriangularMatrix<int> upper(raw, 3, false);
+    int expected_upper[] = {1, 2, 3, 0, 5, 6, 0, 0, 9};
+    expect_matrix_eq(upper, expected_upper, 3, 3, "upper triangular construction crops values");
+    expect_eq(upper.is_lower(), false, "upper triangular flag");
+
+    MutableMatrix<int> full(raw, 3, 3);
+    MutableTriangularMatrix<int> copied(full, true);
+    expect_matrix_eq(copied, expected_lower, 3, 3, "triangular construction from Matrix crops values");
+}
+
+void test_triangular_matrix_set() {
+    int raw[] = {1, 2, 3, 4, 5, 6, 7, 8, 9};
+
+    MutableTriangularMatrix<int> lower(raw, 3, true);
+    TriangularMatrix<int> *changed = lower.set_el(2, 0, 20);
+    int expected_changed[] = {1, 0, 0, 4, 5, 0, 20, 8, 9};
+    expect(changed == &lower, "MutableTriangularMatrix set_el returns this");
+    expect_matrix_eq(lower, expected_changed, 3, 3, "MutableTriangularMatrix set_el changes source");
+
+    expect_throw([&]() {
+        lower.set_el(0, 2, 99);
+    }, "MutableTriangularMatrix set_el forbidden cell throws");
+
+    ImmutableTriangularMatrix<int> upper(raw, 3, false);
+    TriangularMatrix<int> *immutable_changed = upper.set_el(0, 2, 30);
+    int expected_original[] = {1, 2, 3, 0, 5, 6, 0, 0, 9};
+    int expected_immutable_changed[] = {1, 2, 30, 0, 5, 6, 0, 0, 9};
+    expect(immutable_changed != &upper, "ImmutableTriangularMatrix set_el returns new matrix");
+    expect_matrix_eq(upper, expected_original, 3, 3, "ImmutableTriangularMatrix original after set_el");
+    expect_matrix_eq(*immutable_changed, expected_immutable_changed, 3, 3, "ImmutableTriangularMatrix set_el result");
+    delete immutable_changed;
+}
+
+void test_triangular_matrix_operations() {
+    int left_raw[] = {1, 2, 3, 4};
+    int right_raw[] = {5, 6, 7, 8};
+
+    MutableTriangularMatrix<int> left(left_raw, 2, true);
+    MutableTriangularMatrix<int> right(right_raw, 2, true);
+
+    TriangularMatrix<int> *sum = left + right;
+    int expected_sum[] = {6, 0, 10, 12};
+    expect_matrix_eq(*sum, expected_sum, 2, 2, "lower triangular sum");
+    delete sum;
+
+    TriangularMatrix<int> *scaled = left * 2;
+    int expected_scaled[] = {2, 0, 6, 8};
+    expect_matrix_eq(*scaled, expected_scaled, 2, 2, "lower triangular scalar multiply");
+    delete scaled;
+
+    TriangularMatrix<int> *changed = left += right;
+    expect(changed == &left, "MutableTriangularMatrix operator+= returns this");
+    expect_matrix_eq(left, expected_sum, 2, 2, "MutableTriangularMatrix operator+= changes source");
+
+    MutableTriangularMatrix<int> upper(left_raw, 2, false);
+    expect_throw([&]() {
+        TriangularMatrix<int> *result = left + upper;
+        delete result;
+    }, "triangular sum with different orientation throws");
+}
+
+void test_triangular_matrix_disabled_operations() {
+    int raw[] = {1, 2, 3, 4};
+    int rectangular_raw[] = {1, 2, 3, 4, 5, 6};
+
+    MutableTriangularMatrix<int> lower(raw, 2, true);
+    MutableMatrix<int> normal(raw, 2, 2);
+
+    expect_throw([&]() {
+        Matrix<int> *result = lower + normal;
+        delete result;
+    }, "triangular Matrix addition stub throws");
+
+    expect_throw([&]() {
+        Matrix<int> *result = lower.matrix_product(normal);
+        delete result;
+    }, "triangular matrix product stub throws");
+
+    expect_throw([&]() {
+        lower.swap_rows(0, 1);
+    }, "triangular row operation stub throws");
+
+    expect_throw([&]() {
+        lower.multiply_column(0, 2);
+    }, "triangular column operation stub throws");
+
+    expect_throw([&]() {
+        MutableTriangularMatrix<int> invalid(nullptr, 2, true);
+    }, "triangular null items throws");
+
+    expect_throw([&]() {
+        MutableTriangularMatrix<int> invalid(raw, -1, true);
+    }, "triangular negative size throws");
+
+    expect_throw([&]() {
+        MutableMatrix<int> rectangular(rectangular_raw, 2, 3);
+        MutableTriangularMatrix<int> invalid(rectangular, true);
+    }, "triangular construction from rectangular Matrix throws");
+}
+
 } // namespace
 
 int main() {
@@ -234,6 +347,10 @@ int main() {
     test_immutable_matrix_updates();
     test_rectangular_product_and_exceptions();
     test_double_and_complex_matrix();
+    test_triangular_matrix_construction();
+    test_triangular_matrix_set();
+    test_triangular_matrix_operations();
+    test_triangular_matrix_disabled_operations();
 
     std::cout << "\nPassed: " << passed << "\nFailed: " << failed << '\n';
     if (failed == 0) {

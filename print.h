@@ -3,6 +3,7 @@
 #include "include/Sequence.h"
 #include "include/Vector.h"
 #include "include/Matrix.h"
+#include "include/TriangularMatrix.h"
 #include "util.h"
 
 #include <cmath>
@@ -26,6 +27,8 @@ inline void print_object_kind_menu() {
     std::cout << VECTOR_KIND << ". Vector<int>\n";
     std::cout << MUTABLE_MATRIX_KIND << ". MutableMatrix<int>\n";
     std::cout << IMMUTABLE_MATRIX_KIND << ". ImmutableMatrix<int>\n";
+    std::cout << MUTABLE_TRIANGULAR_MATRIX_KIND << ". MutableTriangularMatrix<int>\n";
+    std::cout << IMMUTABLE_TRIANGULAR_MATRIX_KIND << ". ImmutableTriangularMatrix<int>\n";
     std::cout << "0. Exit\n";
 }
 
@@ -38,6 +41,8 @@ inline void print_matrix_kind_menu() {
     std::cout << "\nChoose matrix type:\n";
     std::cout << MUTABLE_MATRIX_KIND << ". MutableMatrix<int>\n";
     std::cout << IMMUTABLE_MATRIX_KIND << ". ImmutableMatrix<int>\n";
+    std::cout << MUTABLE_TRIANGULAR_MATRIX_KIND << ". MutableTriangularMatrix<int>\n";
+    std::cout << IMMUTABLE_TRIANGULAR_MATRIX_KIND << ". ImmutableTriangularMatrix<int>\n";
 }
 
 extern int passed;
@@ -98,6 +103,10 @@ inline const char *matrix_kind_name(int kind) {
             return "MutableMatrix<int>";
         case IMMUTABLE_MATRIX_KIND:
             return "ImmutableMatrix<int>";
+        case MUTABLE_TRIANGULAR_MATRIX_KIND:
+            return "MutableTriangularMatrix<int>";
+        case IMMUTABLE_TRIANGULAR_MATRIX_KIND:
+            return "ImmutableTriangularMatrix<int>";
         default:
             return "Unknown";
     }
@@ -242,7 +251,16 @@ inline void print_matrix(const Matrix<int> &matrix) {
 
 inline void print_current_matrix(const Matrix<int> &matrix, int kind) {
     std::cout << matrix_kind_name(kind) << " size=" << matrix.get_rows()
-              << "x" << matrix.get_columns() << " value=";
+              << "x" << matrix.get_columns();
+    const TriangularMatrix<int> *triangular = dynamic_cast<const TriangularMatrix<int> *>(&matrix);
+    if (triangular != nullptr) {
+        if (triangular->is_lower()) {
+            std::cout << " lower";
+        } else {
+            std::cout << " upper";
+        }
+    }
+    std::cout << " value=";
     print_matrix(matrix);
     std::cout << "\n";
 }
@@ -262,6 +280,18 @@ inline void print_matrix_operation_menu() {
     std::cout << "11. Swap columns\n";
     std::cout << "12. Multiply column\n";
     std::cout << "13. Add scaled column\n";
+    std::cout << "14. Create new matrix\n";
+    std::cout << "0. Back\n";
+}
+
+inline void print_triangular_matrix_operation_menu() {
+    std::cout << "\nTriangular matrix menu:\n";
+    std::cout << "1. Print matrix\n";
+    std::cout << "2. Get element\n";
+    std::cout << "3. Set element\n";
+    std::cout << "4. Sum with another triangular matrix\n";
+    std::cout << "5. Multiply by scalar\n";
+    std::cout << "7. Norm\n";
     std::cout << "14. Create new matrix\n";
     std::cout << "0. Back\n";
 }
